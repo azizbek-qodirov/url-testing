@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Testing Tool</title>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Testing Tool</h1>
+            <label for="method">Request Method:</label>
+            <select id="method" onchange="toggleBodyTextarea()">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="DELETE">DELETE</option>
+            </select>
+            <label for="url">URL:</label>
+            <input type="text" id="url" placeholder="localhost:4044/test">
+
+            <label for="body">Request Body:</label>
+            <textarea id="body" placeholder='{"key": "value"}' disabled></textarea>
+
+            <label for="numRequests">Number of Requests:</label>
+            <input type="number" id="numRequests" value="1000">
+
+            <label for="concurrent">Concurrent Requests:</label>
+            <input type="number" id="concurrent" value="100">
+
+            <div class="checkbox-container">
+                <div>
+                    <input type="checkbox" id="logResults" checked>
+                    <label for="logResults">Log Results</label>
+                </div>
+                <button onclick="startTest()">Start</button>
+            </div>
+
+
+            <div class="result">
+                <h2>Results</h2>
+                <p id="time"></p>
+                <p id="successful"></p>
+                <p id="failed"></p>
+                <p id="response"></p>
+            </div>
+        </div>
+
+        <div class="logs-container">
+            <h2>Logs</h2>
+            <h4>Method &ensp; Status &emsp; URL</h4>
+            <div id="logs"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
