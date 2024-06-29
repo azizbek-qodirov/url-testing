@@ -8,52 +8,32 @@
 </head>
 <body>
     <div class="container">
-        <div class="form-container">
-            <h1>Testing Tool</h1>
-            <label for="method">Request Method:</label>
-            <select id="method" onchange="toggleBodyTextarea()">
-                <option value="GET">GET</option>
-                <option value="POST">POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-            </select>
-            <label for="url">URL:</label>
-            <input type="text" id="url" placeholder="localhost:4044/test">
-
-            <label for="body">Request Body:</label>
-            <textarea id="body" placeholder='{"key": "value"}' disabled></textarea>
-
-            <label for="numRequests">Number of Requests:</label>
-            <input type="number" id="numRequests" value="1000">
-
-            <label for="concurrent">Concurrent Requests:</label>
-            <input type="number" id="concurrent" value="100">
-
+        <h1>Testing Tool</h1>
+        <div id="forms-container"></div>
+        <div class="global-controls">
             <div class="checkbox-container">
                 <div>
                     <input type="checkbox" id="logResults" checked>
                     <label for="logResults">Log Results</label>
                 </div>
-                <button onclick="startTest()">Start</button>
-            </div>
-
-
-            <div class="result">
-                <h2>Results</h2>
-                <p id="time"></p>
-                <p id="successful"></p>
-                <p id="failed"></p>
-                <p id="response"></p>
+                <button onclick="startAllTests()">Start All Tests</button>
             </div>
         </div>
+    </div>
 
-        <div class="logs-container">
+    <div id="logs-panel" class="logs-panel collapsed">
+        <div class="logs-header" onclick="toggleLogs()">
             <h2>Logs</h2>
+        </div>
+        <div class="logs-content">
             <h4>Method &ensp; Status &emsp; URL</h4>
             <div id="logs"></div>
         </div>
     </div>
 
+    <button id="add-form-btn" onclick="addNewForm()">+</button>
+
     <script src="script.js"></script>
 </body>
 </html>
+

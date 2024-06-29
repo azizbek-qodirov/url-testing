@@ -16,18 +16,13 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) PostTest(c *gin.Context) {
-	var reqModel models.RequestModel
-	if err := c.ShouldBindJSON(&reqModel); err != nil {
+	var reqModels []*models.RequestModel
+	if err := c.ShouldBindJSON(&reqModels); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	successfulRequests, failedRequests, dur, logs := performLoadTest(reqModel)
+	res := performLoadTest(reqModels)
 
-	c.JSON(http.StatusOK, gin.H{
-		"successful_requests": successfulRequests,
-		"failed_requests":     failedRequests,
-		"time":                dur.Seconds(),
-		"logs":                string(logs),
-	})
+	c.JSON(http.StatusOK, res)
 }

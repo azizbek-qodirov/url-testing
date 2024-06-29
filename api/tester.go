@@ -11,7 +11,26 @@ import (
 	"url-tester/models"
 )
 
-func performLoadTest(reqModel models.RequestModel) (int, int, time.Duration, []byte) {
+func performLoadTest(reqModels []*models.RequestModel) []models.TestResult {
+	var results []models.TestResult
+
+	for _, reqModel := range reqModels {
+		successfulRequests, failedRequests, duration, logs := performSingleLoadTest(reqModel)
+		result := models.TestResult{
+			Method:             reqModel.Method,
+			URL:                reqModel.URL,
+			SuccessfulRequests: successfulRequests,
+			FailedRequests:     failedRequests,
+			Time:               duration.Seconds(),
+			Logs:               string(logs),
+		}
+		results = append(results, result)
+	}
+
+	return results
+}
+
+func performSingleLoadTest(reqModel *models.RequestModel) (int, int, time.Duration, []byte) {
 	var logs []byte
 	var wg sync.WaitGroup
 	ch := make(chan int, reqModel.ReqCount)
@@ -25,6 +44,7 @@ func performLoadTest(reqModel models.RequestModel) (int, int, time.Duration, []b
 
 			req, err := http.NewRequest(reqModel.Method, reqModel.URL, bytes.NewBuffer([]byte(reqModel.Body)))
 			if err != nil {
+				logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error creating request: nil <br>", reqModel.Method, 0, reqModel.URL))...)
 				ch <- 0
 				return
 			}
@@ -35,8 +55,13 @@ func performLoadTest(reqModel models.RequestModel) (int, int, time.Duration, []b
 
 			resp, err := client.Do(req)
 			if err != nil {
-				// res := fmt.Sprintf("%s &emsp;&emsp;%d &emsp;&emsp; %s &emsp;&emsp;Error: %s <br>", reqModel.Method, resp.StatusCode, reqModel.URL, err.Error())
-				// logs = append(logs, []byte(res)...)
+				fmt.Println(resp, reqModel)
+				if resp != nil && reqModel != nil {
+					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error performing request: nil <br>", reqModel.Method, resp.StatusCode, reqModel.URL))...)
+				} else {
+
+					logs = append(logs, []byte(fmt.Sprintln("Goroutine error: Invalid memory address or nil pointer dereference"))...)
+				}
 				ch <- 0
 				return
 			}
@@ -49,10 +74,10 @@ func performLoadTest(reqModel models.RequestModel) (int, int, time.Duration, []b
 			} else {
 				body, err := io.ReadAll(resp.Body)
 				if err != nil {
+					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error reading response body: nil <br>", reqModel.Method, resp.StatusCode, reqModel.URL))...)
 					ch <- 0
 					return
 				}
-				defer resp.Body.Close()
 				type ErrResp struct {
 					Error   string `json:"error"`
 					Details string `json:"details"`
@@ -60,6 +85,7 @@ func performLoadTest(reqModel models.RequestModel) (int, int, time.Duration, []b
 				var errResp ErrResp
 				err = json.Unmarshal(body, &errResp)
 				if err != nil {
+					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error unmarshalling response: nil <br>", reqModel.Method, resp.StatusCode, reqModel.URL))...)
 					ch <- 0
 					return
 				}

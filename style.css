@@ -3,42 +3,80 @@ body {
     background-color: #121212;
     color: #e0e0e0;
     margin: 0;
-    padding: 0;
+    padding: 20px;
 }
+
 .container {
     display: flex;
-    justify-content: space-between;
-    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
 }
+
+h1 {
+    color: #00ff00;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#forms-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    width: 100%;
+
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 .form-container {
     background-color: #1e1e1e;
     padding: 20px;
-    width: 35%;
+    width: calc(50% - 10px);
+    min-width: 300px;
     display: flex;
     flex-direction: column;
     align-items: start;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
+
+    flex: 0 1 calc(33.33% - 20px);
+    min-width: 500px;
+    max-width: 100%;;
 }
-.logs-container {
-    background-color: #000;
+
+@media (max-width: 1000px) {
+    .form-container {
+        flex: 0 1 calc(50% - 20px); /* 2 items per row on medium screens */
+    }
+}
+
+@media (max-width: 650px) {
+    .form-container {
+        flex: 0 1 100%; /* 1 item per row on small screens */
+    }
+}
+
+.global-controls {
+    margin-top: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+h2, h4 {
     color: #00ff00;
-    width: 60%;
-    margin-left: 20px;
-    border-left: 1px solid #00ff00;
-    padding-left: 20px;
-    height: 100%;
-    overflow: auto;
-    white-space: nowrap;
 }
-h1, h2, h4 {
-    color: #00ff00;
-}
+
 label {
     display: block;
     margin-bottom: 8px;
 }
+
 input, select, textarea {
-    width: 100%;
+    width: 96%;
     margin-bottom: 20px;
     padding: 10px;
     font-size: 16px;
@@ -47,9 +85,11 @@ input, select, textarea {
     border: none;
     border-radius: 5px;
 }
+
 textarea {
     height: 100px;
 }
+
 button {
     padding: 10px 20px;
     font-size: 16px;
@@ -60,31 +100,129 @@ button {
     border-radius: 5px;
     transition: background-color 0.3s;
 }
+
 button:hover {
     background-color: #00cc00;
 }
+
 .result {
     margin-top: 20px;
+    width: 100%;
 }
-.logs-container div {
-    white-space: pre;
-}
+
 .checkbox-container {
-    width: 40%;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
+    gap: 20px;
 }
-.checkbox-container div{
+
+.checkbox-container div {
     display: flex;
     align-items: center;
 }
+
 .checkbox-container input[type="checkbox"] {
     height: 20px;
     accent-color: #00ff00;
 }
+
 .checkbox-container label {
     color: #00ff00;
     font-size: 16px;
+    margin-bottom: 0;
 }
+
+.logs-panel {
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    background-color: #000;
+    color: #00ff00;
+    border: 1px solid #00ff00;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    z-index: 1000;
+}
+
+.logs-panel.collapsed {
+    width: 100px;
+    height: 40px;
+}
+
+.logs-panel:not(.collapsed) {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.logs-header {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.logs-header h2 {
+    margin: 0;
+}
+
+.logs-content {
+    padding: 20px;
+    padding-top: 0;
+    height: calc(100% - 60px);
+    overflow: auto;
+}
+
+.logs-panel.collapsed .logs-content {
+    display: none;
+}
+
+#logs {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+#add-form-btn {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+/* ... (previous styles remain the same) ... */
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.form-header select {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.delete-btn {
+    background: none;
+    border: none;
+    color: #ff0000;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px 10px;
+    margin-left: 10px;
+}
+
+.delete-btn:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+/* ... (rest of the CSS remains the same) ... */
