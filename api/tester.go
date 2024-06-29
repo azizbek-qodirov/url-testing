@@ -26,7 +26,6 @@ func performLoadTest(reqModels []*models.RequestModel) []models.TestResult {
 		}
 		results = append(results, result)
 	}
-
 	return results
 }
 

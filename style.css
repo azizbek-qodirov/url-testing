@@ -226,3 +226,34 @@ button:hover {
 }
 
 /* ... (rest of the CSS remains the same) ... */
+
+
+#status-bar-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: #000;
+    z-index: 1000;
+  }
+  
+  #status-bar {
+    height: 100%;
+    width: 0;
+    background-color: #00ff00;
+    transition: width 0.5s ease;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  @keyframes hackerAnimation {
+    0% { width: 0%; }
+    25% { width: 35%; }
+    50% { width: 60%; }
+    75% { width: 85%; }
+    100% { width: 98%; }
+  }
+  

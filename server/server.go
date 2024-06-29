@@ -11,7 +11,6 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/test", func(c *gin.Context) {
-		c.Error(fmt.Errorf("DELETE request received"))
 		c.JSON(http.StatusOK, gin.H{
 			"message": "GET request received",
 		})

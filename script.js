@@ -68,6 +68,8 @@ function toggleBodyTextarea(formId) {
 async function startAllTests() {
     const logResults = document.getElementById("logResults").checked;
     const testsData = [];
+    showStatusBar();  // Show the status bar when starting tests
+
 
     for (let i = 1; i <= formCount; i++) {
         const method = document.getElementById(`method-${i}`).value;
@@ -84,8 +86,11 @@ async function startAllTests() {
             "c_req_count": concurrent
         });
     }
-
-    await startTest(testsData, logResults);
+    try {
+        await startTest(testsData, logResults);
+    } finally {
+        hideStatusBar();
+    }
 }
 
 async function startTest(testsData, logResults) {
@@ -121,6 +126,14 @@ async function startTest(testsData, logResults) {
             const logsContent = document.querySelector('.logs-content');
             logsContent.scrollTop = logsContent.scrollHeight;
         }
+
+        try {
+        } catch (error) {
+            console.error('Error:', error);
+            if (logResults) {
+                document.getElementById("logs").innerHTML += `Error: ${error.message}<br>`;
+            }
+        }
     } catch (error) {
         console.error('Error:', error);
         if (logResults) {
@@ -133,6 +146,26 @@ function toggleLogs() {
     const logsPanel = document.getElementById('logs-panel');
     logsPanel.classList.toggle('collapsed');
 }
+
+
+function showStatusBar() {
+    const statusBarContainer = document.getElementById('status-bar-container');
+    const statusBar = document.getElementById('status-bar');
+    statusBarContainer.classList.remove('hidden');
+    statusBar.style.animation = 'hackerAnimation 3s linear infinite alternate';
+}
+
+function hideStatusBar() {
+    const statusBarContainer = document.getElementById('status-bar-container');
+    const statusBar = document.getElementById('status-bar');
+    statusBar.style.animation = 'none';
+    statusBar.style.width = '100%';
+    setTimeout(() => {
+        statusBarContainer.classList.add('hidden');
+        statusBar.style.width = '0';
+    }, 500);
+}
+
 
 window.onload = addNewForm;
 
