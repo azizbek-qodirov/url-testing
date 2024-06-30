@@ -5,11 +5,60 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 	"url-tester/models"
 )
+
+func isValidURL(urlStr string) bool {
+	u, err := url.Parse(urlStr)
+	if err != nil {
+		return false
+	}
+	if u.Scheme == "" || u.Host == "" {
+		return false
+	}
+
+	// Special handling for localhost
+	if u.Host == "localhost" || strings.HasPrefix(u.Host, "localhost:") {
+		return true
+	}
+
+	// Check for valid TLD
+	parts := strings.Split(u.Host, ".")
+	if len(parts) < 2 {
+		return false
+	}
+	tld := parts[len(parts)-1]
+	if len(tld) < 2 || len(tld) > 6 {
+		return false
+	}
+
+	// Attempt to resolve the domain
+	_, err = net.LookupHost(u.Host)
+	if err != nil {
+		return false
+	}
+
+	// Attempt a HEAD request
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	resp, err := client.Head(urlStr)
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	return resp.StatusCode < 400
+}
 
 func performLoadTest(reqModels []*models.RequestModel) []models.TestResult {
 	var results []models.TestResult
@@ -36,6 +85,11 @@ func performSingleLoadTest(reqModel *models.RequestModel) (int, int, time.Durati
 	client := &http.Client{Timeout: 10 * time.Second}
 	start := time.Now()
 
+	if !isValidURL(reqModel.URL) {
+		logs = append(logs, []byte(fmt.Sprintf("Invalid URL: %s<br>", reqModel.URL))...)
+		return 0, reqModel.ReqCount, time.Since(start), logs
+	}
+
 	for i := 0; i < reqModel.ReqCount; i++ {
 		wg.Add(1)
 		go func() {
@@ -54,11 +108,9 @@ func performSingleLoadTest(reqModel *models.RequestModel) (int, int, time.Durati
 
 			resp, err := client.Do(req)
 			if err != nil {
-				fmt.Println(resp, reqModel)
-				if resp != nil && reqModel != nil {
-					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error performing request: nil <br>", reqModel.Method, resp.StatusCode, reqModel.URL))...)
+				if resp != nil {
+					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error performing request: %s <br>", reqModel.Method, resp.StatusCode, reqModel.URL, err.Error()))...)
 				} else {
-
 					logs = append(logs, []byte(fmt.Sprintln("Goroutine error: Invalid memory address or nil pointer dereference"))...)
 				}
 				ch <- 0
@@ -73,7 +125,7 @@ func performSingleLoadTest(reqModel *models.RequestModel) (int, int, time.Durati
 			} else {
 				body, err := io.ReadAll(resp.Body)
 				if err != nil {
-					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error reading response body: nil <br>", reqModel.Method, resp.StatusCode, reqModel.URL))...)
+					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error reading response body: %s <br>", reqModel.Method, resp.StatusCode, reqModel.URL, err.Error()))...)
 					ch <- 0
 					return
 				}
@@ -84,7 +136,7 @@ func performSingleLoadTest(reqModel *models.RequestModel) (int, int, time.Durati
 				var errResp ErrResp
 				err = json.Unmarshal(body, &errResp)
 				if err != nil {
-					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error unmarshalling response: nil <br>", reqModel.Method, resp.StatusCode, reqModel.URL))...)
+					logs = append(logs, []byte(fmt.Sprintf("%s &emsp;&emsp; %d &emsp;&emsp; %s &emsp;&emsp;Error unmarshalling response: %s <br>", reqModel.Method, resp.StatusCode, reqModel.URL, err.Error()))...)
 					ch <- 0
 					return
 				}

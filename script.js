@@ -1,7 +1,8 @@
 let formCount = 0;
+let titleInterval;
 
 function addNewForm() {
-    if (formCount == 5){
+    if (formCount == 5) {
         return;
     }
     formCount++;
@@ -20,7 +21,7 @@ function addNewForm() {
             <button class="delete-btn" onclick="deleteForm(${formCount})">❌</button>
         </div>
         <label for="url-${formCount}">URL:</label>
-        <input type="text" id="url-${formCount}" placeholder="localhost:4044/test">
+        <input type="text" id="url-${formCount}" placeholder="https://example.com/api">
 
         <label for="body-${formCount}">Request Body:</label>
         <textarea id="body-${formCount}" placeholder='{"key": "value"}' disabled></textarea>
@@ -43,7 +44,7 @@ function addNewForm() {
 }
 
 function deleteForm(formId) {
-    if (formCount == 1){
+    if (formCount == 1) {
         return;
     }
     formCount--;
@@ -65,11 +66,34 @@ function toggleBodyTextarea(formId) {
     }
 }
 
+function animateTitle() {
+    const h1 = document.querySelector('h1');
+    const phrases = ['Processing', 'Processing.', 'Processing..', 'Processing...'];
+    let index = 0;
+
+    document.body.classList.add('processing');
+
+    function updateText() {
+        h1.textContent = phrases[index];
+        index = (index + 1) % phrases.length;
+    }
+
+    updateText();
+    titleInterval = setInterval(updateText, 500); 
+}
+
+function resetTitle() {
+    const h1 = document.querySelector('h1');
+    clearInterval(titleInterval);
+    h1.textContent = 'Testing Tool';
+    document.body.classList.remove('processing');
+}
+
 async function startAllTests() {
+    animateTitle();
+
     const logResults = document.getElementById("logResults").checked;
     const testsData = [];
-    showStatusBar();  // Show the status bar when starting tests
-
 
     for (let i = 1; i <= formCount; i++) {
         const method = document.getElementById(`method-${i}`).value;
@@ -86,14 +110,7 @@ async function startAllTests() {
             "c_req_count": concurrent
         });
     }
-    try {
-        await startTest(testsData, logResults);
-    } finally {
-        hideStatusBar();
-    }
-}
 
-async function startTest(testsData, logResults) {
     try {
         const response = await fetch('http://localhost:4044/test/post', {
             method: 'POST',
@@ -105,7 +122,7 @@ async function startTest(testsData, logResults) {
 
         if (!response.ok) {
             throw new Error('Network response was not ok');
-        }
+        }   
 
         const result = await response.json();
 
@@ -126,19 +143,13 @@ async function startTest(testsData, logResults) {
             const logsContent = document.querySelector('.logs-content');
             logsContent.scrollTop = logsContent.scrollHeight;
         }
-
-        try {
-        } catch (error) {
-            console.error('Error:', error);
-            if (logResults) {
-                document.getElementById("logs").innerHTML += `Error: ${error.message}<br>`;
-            }
-        }
     } catch (error) {
         console.error('Error:', error);
         if (logResults) {
             document.getElementById("logs").innerHTML += `Error: ${error.message}<br>`;
         }
+    } finally {
+        resetTitle();
     }
 }
 
@@ -146,26 +157,6 @@ function toggleLogs() {
     const logsPanel = document.getElementById('logs-panel');
     logsPanel.classList.toggle('collapsed');
 }
-
-
-function showStatusBar() {
-    const statusBarContainer = document.getElementById('status-bar-container');
-    const statusBar = document.getElementById('status-bar');
-    statusBarContainer.classList.remove('hidden');
-    statusBar.style.animation = 'hackerAnimation 3s linear infinite alternate';
-}
-
-function hideStatusBar() {
-    const statusBarContainer = document.getElementById('status-bar-container');
-    const statusBar = document.getElementById('status-bar');
-    statusBar.style.animation = 'none';
-    statusBar.style.width = '100%';
-    setTimeout(() => {
-        statusBarContainer.classList.add('hidden');
-        statusBar.style.width = '0';
-    }, 500);
-}
-
 
 window.onload = addNewForm;
 
