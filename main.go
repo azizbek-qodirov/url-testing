@@ -18,7 +18,7 @@ func main() {
 	// em := config.NewErrorManager(logger)
 
 	router := api.NewRouter()
- 
+  
 	// Start the server
 	logger.INFO.Printf("Starting server on port %d", 4044)
 	if err := router.Run(":4044"); err != nil {
